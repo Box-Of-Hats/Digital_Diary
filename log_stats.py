@@ -10,19 +10,25 @@ def plot_bestfit(data):
 	m, b = np.polyfit(indexes, data, 1)
 	plt.plot(indexes, m*indexes + b, '-',linewidth=0.3)
 
-def logLengths_plot(logList,bestFit=False):
+def plot_average(data,c='r',linewidth=3):
+	avg = np.average(data)
+	plt.axhline(y=avg,c=c,linewidth=linewidth,label='Average')
+	plt.legend(loc='best')
+
+def logLengths_plot(logList,bestFit=False,avg=True):
 	"""Plots a graph of log wordCounts over time"""
 	lengths = [int(x.wordCount) for x in logList]
 	plt.plot(lengths,'y',linewidth=0.3)
 	plt.plot(lengths,'y',linewidth=2.0,marker='o')
 	if bestFit: plot_bestfit(lengths)
+	if avg: plot_average(lengths)
 	plt.grid(color='r', linestyle='-', linewidth=0.1)
 	plt.title('Length of logs')
 	plt.xlabel('Log Number')
 	plt.ylabel('Word Count')
 	plt.show()
 
-def logLengths_hist(logList):
+def logLengths_hist(logList,):
 	"""Plots a histogram of log wordCounts"""
 	logList = list(logList)
 	lengths = []
@@ -43,6 +49,18 @@ def logLengths_hist(logList):
 	plt.tight_layout()
 	plt.show()
 
+def logLengths_scat(loglist,color='m',size=50):
+	loglist = list(loglist)
+	y = [l.wordCount for l in loglist]
+	x = [(int(l.month)) for l in loglist]
+
+	plt.xticks(range(1,13),[toMonth(l)[0:3] for l in range(1,13)])
+	plt.ylim([0,(max(y)+min(y))])
+	plt.xlim([1,12])
+	plt.ylabel('Word Count')
+	plt.scatter(x,y,c=color,s=size,edgecolor=color)
+	plt.show()
+
 
 if __name__ == '__main__':
 	swears = 'wordLists/swearWords.txt'
@@ -50,11 +68,9 @@ if __name__ == '__main__':
 	memoryFolder = glob('logs//*') 
 	allMems = loadMemories(memoryFolder) #A list of all memories
 
+	logLengths_plot(allMems)
 
-	allWords = findWords(memoryFolder,hideEmpty=True,minLen=0,ascending=True)
-	#longerWords = findWords(memoryFolder,minLen=4)
-	logLengths_plot(allMems,bestFit=True)
-	#statsPrint(memoryFolder)
-	
-
+	#allWords = findWords(memoryFolder,hideEmpty=True,minLen=0,ascending=True)
+	#for log in allMems:
+	#	print(log.title)
 

@@ -76,6 +76,13 @@ Available functions:
 			values: type(list[tuple]) OR type(dict): values to output
 		[OUT]
 			None
+
+	spoolToTxt(loglist,filename):
+		[IN]
+			loglist: type(list(Memory)): List of memories to spool
+			filename: type(str): Name of file to spool to (will be created/overwritten)
+		[OUT]
+			None
 """
 from collections import Counter
 from glob import glob
@@ -231,6 +238,18 @@ def findWords(logFile,query=False,ascending=True,alphabetical=False,minLen=False
 	else:
 		print('TypeError: findWords(): query must be str or list, not type({})'.format(type(query)))
 
+
+def findInstances(loglist,word):
+	"""Finds all logs that contain a given word"""
+	loglist = list(loglist)
+	if isinstance(loglist[0], str):
+		loglist = loadMemories(loglist)
+	elif isinstance(loglist[0], Memory):
+		loglist
+	for log in loglist:
+		if word in log.text:
+			yield log
+
 def filterByDate(loglist,date=False,day=False,month=False,year=False):
 	"""Searches through a list of logs and returns only those that meet the given date."""
 	def checkFor(log,criteria,typeOfCriteria):
@@ -240,7 +259,7 @@ def filterByDate(loglist,date=False,day=False,month=False,year=False):
 			'year': log.year,
 		}
 		if criteria:
-			if str(critTypes[typeOfCriteria]) == str(criteria):
+			if int(critTypes[typeOfCriteria]) == int(criteria):
 				return log
 		else:
 			return True
@@ -252,11 +271,19 @@ def filterByDate(loglist,date=False,day=False,month=False,year=False):
 			matches.append(log)
 	return matches
 
+def totalWordCount(loglist):
+	count = 0
+	for log in loglist:
+		count += log.wordCount
+	return count
+
+
 def logsByMonth(logList,month=False):
+	"""Sorts a list of logs by their month"""
 	monthCounts = []
 	for m in ['01','02','03','04','05','06','07','08','09','10','11','12']:
 		monthCounts.append((m,len(filterByDate(logList,month=m))))
-	return sorted(monthCounts,key=lambda log:log[0])  ###FIX THIS!
+	return sorted(monthCounts,key=lambda log:log[1])
 
 def toMonth(monthNo):
 	"""Takes a number and returns the corresponding month name"""
@@ -327,3 +354,17 @@ def wordCountToCsv(listOfWords,filename,echo=True):
 	if echo:
 		print('Saved to {}'.format(filename))
 	return filename
+
+def spoolToTxt(loglist,filename):
+	"""Creates a file from giving logs."""
+	to = open(filename,'w')
+	for log in loglist:
+		to.write('{}: {}'.format(log.date,log.title))
+		to.write('{}'.format(log.text))
+		to.write('\n\n-------------------------------------\n')
+	to.close()
+
+if __name__ == '__main__':
+	directory = glob('logs//*')
+	allMemories = loadMemories(directory)
+	spoolToTxt(allMemories,'testMyAss.txt')
